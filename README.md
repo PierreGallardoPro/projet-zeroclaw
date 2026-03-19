@@ -12,7 +12,7 @@ Chaque agent est indépendant et peut être activé ou désactivé sans impacter
 projet-zeroclaw/
 ├── docker-compose.yml       # Orchestration de tous les services
 ├── .env                     # Variables d'environnement (non versionné)
-├── .env.example             # Template des variables d'environnement
+├── .env.exemple             # Template des variables d'environnement
 │
 ├── mail_agent/              # 📬 Agent de tri d'e-mails Gmail
 │   ├── mail_agent.py
