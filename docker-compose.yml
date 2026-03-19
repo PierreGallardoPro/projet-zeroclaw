@@ -1,0 +1,45 @@
+services:
+  omniroute:
+    image: diegosouzapw/omniroute:latest
+    container_name: omniroute
+    restart: unless-stopped
+    environment:
+      - PORT=20128
+      - DATA_DIR=/app/data
+    ports:
+      - "20128:20128"
+    volumes:
+      - omniroute-data:/app/data
+
+  zeroclaw:
+    image: ghcr.io/zeroclaw-labs/zeroclaw:latest
+    container_name: zeroclaw
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - ZEROCLAW_ALLOW_PUBLIC_BIND=true
+      - ZEROCLAW_GATEWAY_PORT=42617
+      - ZEROCLAW_PROVIDER=custom:http://omniroute:20128/v1
+      - API_KEY=${OMNIROUTE_API_KEY}
+      - ZEROCLAW_MODEL=${AI_MODEL}
+    ports:
+      - "42617:42617"
+    volumes:
+      - zeroclaw-data:/zeroclaw-data
+
+  mail-agent:
+    build: ./mail_agent
+    container_name: mail_agent
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # L'agent Python communique avec OmniRoute via le réseau Docker interne
+      - OMNIROUTE_URL=http://omniroute:20128/v1/chat/completions
+    depends_on:
+      - omniroute
+
+volumes:
+  omniroute-data:
+  zeroclaw-data:
