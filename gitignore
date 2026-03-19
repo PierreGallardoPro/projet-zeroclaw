@@ -1,0 +1,54 @@
+# ───────────────────────────────
+# Variables d'environnement
+# ───────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ───────────────────────────────
+# Python
+# ───────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ───────────────────────────────
+# Docker
+# ───────────────────────────────
+# Volumes Docker locaux (si montés dans le projet)
+omniroute-data/
+zeroclaw-data/
+
+# ───────────────────────────────
+# Logs
+# ───────────────────────────────
+*.log
+logs/
+
+# ───────────────────────────────
+# OS
+# ───────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ───────────────────────────────
+# Éditeurs / IDEs
+# ───────────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
