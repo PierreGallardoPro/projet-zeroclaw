@@ -119,7 +119,7 @@ IMAP_PORT=993
 GMAIL_USER=ton.email@gmail.com
 GMAIL_APP_PASS=ton_mot_de_passe_app_google
 
-# ── Configuration IA ────────────────────────────────
+# ── Configuration IA ─────────────────────────────────
 OMNIROUTE_API_KEY=ta_cle_api_omniroute
 AI_MODEL=kr/claude-sonnet-4.5
 ```
@@ -158,6 +158,72 @@ docker compose logs -f mail-agent-gmail
 
 ---
 
+## 🔄 Mettre à jour le projet
+
+Les mises à jour se font via `git pull` directement depuis le serveur, suivi d'un rebuild des conteneurs modifiés.
+
+### Mise à jour complète (tous les services)
+
+```bash
+cd /home/pierregallardo/projet-zeroclaw
+
+# 1. Récupérer les dernières modifications depuis GitHub
+git pull origin main
+
+# 2. Rebuilder et relancer tous les conteneurs
+docker compose up -d --build
+```
+
+### Mise à jour d'un agent spécifique uniquement
+
+Si seul le code d'un agent a changé, inutile de tout rebuilder :
+
+```bash
+cd /home/pierregallardo/projet-zeroclaw
+
+# 1. Récupérer les modifications
+git pull origin main
+
+# 2. Rebuilder et relancer uniquement l'agent concerné
+docker compose up -d --build mail-agent
+# ou
+docker compose up -d --build mail-agent-gmail
+```
+
+### Mise à jour du docker-compose.yml uniquement
+
+Si seul le fichier `docker-compose.yml` a changé (ajout d'un service, variable d'env…) sans modification de code, pas besoin de rebuild :
+
+```bash
+git pull origin main
+docker compose up -d
+```
+
+### Vérifier que tout est reparti correctement
+
+```bash
+# Statut de tous les conteneurs
+docker compose ps
+
+# Logs en temps réel
+docker compose logs -f
+```
+
+### En cas de problème après une mise à jour
+
+```bash
+# Revenir au commit précédent
+git log --oneline -5          # identifier le commit stable
+git checkout <commit-hash>    # revenir à ce commit
+
+# Rebuilder depuis ce commit
+docker compose up -d --build
+```
+
+> 💡 **Bonne pratique** : avant toute mise à jour en production, tester sur une branche dédiée et vérifier les logs après le déploiement.
+
+---
+
 ## ➕ Ajouter un nouvel agent
 
 Le projet est conçu pour être **extensible**. Pour ajouter un agent :
@@ -185,12 +251,16 @@ mon-agent:
     - omniroute
 ```
 
-3. **Relancer** Docker Compose :
+3. **Pousser sur GitHub et déployer** :
 ```bash
+git add .
+git commit -m "feat: ajout de mon_agent"
+git push origin main
+
+# Sur le serveur
+git pull origin main
 docker compose up -d --build mon-agent
 ```
-
-Chaque agent communique avec Claude via OmniRoute sur le réseau Docker interne — aucune configuration réseau supplémentaire n'est nécessaire.
 
 ---
 
