@@ -40,6 +40,17 @@ services:
     depends_on:
       - omniroute
 
+  mail-agent-gmail:
+    build: ./mail_agent_gmail
+    container_name: mail_agent_gmail
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - OMNIROUTE_URL=http://omniroute:20128/v1/chat/completions
+    depends_on:
+      - omniroute
+
 volumes:
   omniroute-data:
   zeroclaw-data:
