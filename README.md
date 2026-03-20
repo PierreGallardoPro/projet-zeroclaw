@@ -10,16 +10,21 @@ Chaque agent est indépendant et peut être activé ou désactivé sans impacter
 
 ```
 projet-zeroclaw/
-├── docker-compose.yml       # Orchestration de tous les services
-├── .env                     # Variables d'environnement (non versionné)
-├── .env.exemple             # Template des variables d'environnement
+├── docker-compose.yml         # Orchestration de tous les services
+├── .env                       # Variables d'environnement (non versionné)
+├── .env.example               # Template des variables d'environnement
 │
-├── mail_agent/              # 📬 Agent de tri d'e-mails Gmail
+├── mail_agent/                # 📬 Agent de tri — boîte OVH (ou tout fournisseur IMAP)
 │   ├── mail_agent.py
 │   ├── requirements.txt
 │   └── Dockerfile
 │
-└── mon_agent/               # 🤖 Ton prochain agent ici
+├── mail_agent_gmail/          # 📬 Agent de tri — boîte Gmail
+│   ├── mail_agent.py
+│   ├── requirements.txt
+│   └── Dockerfile
+│
+└── mon_agent/                 # 🤖 Ton prochain agent ici
     ├── agent.py
     ├── requirements.txt
     └── Dockerfile
@@ -38,19 +43,29 @@ Ces deux services sont **partagés par tous les agents** — ils doivent toujour
 
 ## 🤖 Agents disponibles
 
-### 📬 mail_agent — Tri automatique des e-mails Gmail
+### 📬 mail_agent — Tri automatique (OVH / multi-fournisseurs)
 
-Connecté à Gmail via IMAP, cet agent analyse les e-mails non lus et les classe automatiquement dans des dossiers intelligents grâce à Claude.
+Connecté à n'importe quelle boîte mail via IMAP, cet agent analyse les e-mails non lus et les classe automatiquement dans des dossiers intelligents grâce à Claude.
+
+**Fournisseurs supportés :**
+
+| Fournisseur | `IMAP_HOST` | `IMAP_PORT` |
+|---|---|---|
+| OVH | `ssl0.ovh.net` | `993` |
+| Gmail | `imap.gmail.com` | `993` |
+| Outlook / Hotmail | `outlook.office365.com` | `993` |
+| Yahoo | `imap.mail.yahoo.com` | `993` |
+| Infomaniak | `mail.infomaniak.com` | `993` |
 
 **Flux de données :**
 ```
-Gmail (IMAP) ──▶ mail-agent ──▶ OmniRoute ──▶ Claude
-                     │
-                     └──▶ Crée des dossiers Gmail et y déplace les e-mails
+Boîte mail (IMAP) ──▶ mail-agent ──▶ OmniRoute ──▶ Claude
+                           │
+                           └──▶ Crée des dossiers et y déplace les e-mails
 ```
 
 **Fonctionnement :**
-1. Connexion à Gmail via **IMAP SSL**
+1. Connexion au serveur IMAP via SSL
 2. Récupération des e-mails **non lus** dans la boîte de réception
 3. Envoi du sujet + extrait (500 caractères) à **Claude** via OmniRoute
 4. Claude retourne un nom de dossier court (ex: `Factures`, `Newsletters`, `Projets`)
@@ -59,12 +74,20 @@ Gmail (IMAP) ──▶ mail-agent ──▶ OmniRoute ──▶ Claude
 
 ---
 
+### 📬 mail_agent_gmail — Tri automatique (Gmail)
+
+Version dédiée Gmail utilisant le système de **mot de passe d'application** Google.
+
+> Nécessite d'activer l'accès IMAP dans les paramètres Gmail et de générer un mot de passe d'application sur [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords).
+
+---
+
 ## ⚙️ Prérequis
 
 - [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/)
-- Un compte **Gmail** avec l'accès IMAP activé
-- Un **mot de passe d'application Gmail** — [Créer ici](https://myaccount.google.com/apppasswords)
+- Un compte mail avec accès IMAP activé
 - Une clé API **OmniRoute**
+- Pour Gmail : un **mot de passe d'application** Google (pas ton mot de passe principal)
 
 ---
 
@@ -86,33 +109,51 @@ cp .env.example .env
 Édite `.env` :
 
 ```env
-# Identifiants Gmail
-GMAIL_USER=ton.email@gmail.com
-GMAIL_APP_PASS=ton_mot_de_passe_application_de_16_lettres
+# ── Boîte OVH (mail_agent) ──────────────────────────
+MAIL_USER=ton.email@tondomaine.com
+MAIL_PASS=ton_mot_de_passe_ovh
+IMAP_HOST=ssl0.ovh.net
+IMAP_PORT=993
 
-# Configuration IA
+# ── Boîte Gmail (mail_agent_gmail) ──────────────────
+GMAIL_USER=ton.email@gmail.com
+GMAIL_APP_PASS=ton_mot_de_passe_app_google
+
+# ── Configuration IA ────────────────────────────────
 OMNIROUTE_API_KEY=ta_cle_api_omniroute
 AI_MODEL=kr/claude-sonnet-4.5
 ```
 
 > ⚠️ **Ne commite jamais ton fichier `.env`** — il est listé dans le `.gitignore`.
 
-### 3. Lancer tous les services
+### 3. Protéger le fichier `.env` sur le serveur
+
+```bash
+chmod 600 .env
+chown root:root .env
+```
+
+### 4. Lancer tous les services
 
 ```bash
 docker compose up -d --build
 ```
 
-### 4. Lancer un agent spécifique uniquement
+### 5. Lancer un agent spécifique uniquement
 
 ```bash
+# Socle + agent OVH uniquement
 docker compose up -d omniroute zeroclaw mail-agent
+
+# Socle + agent Gmail uniquement
+docker compose up -d omniroute zeroclaw mail-agent-gmail
 ```
 
-### 5. Vérifier les logs
+### 6. Vérifier les logs
 
 ```bash
 docker compose logs -f mail-agent
+docker compose logs -f mail-agent-gmail
 ```
 
 ---
@@ -165,6 +206,14 @@ docker compose stop mail-agent
 # Supprimer aussi les volumes
 docker compose down -v
 ```
+
+---
+
+## 🔒 Sécurité
+
+- Le fichier `.env` doit être en `chmod 600` et appartenir à `root`
+- Ne jamais déclarer les variables sensibles sous la clé `environment:` dans `docker-compose.yml` (elles apparaissent en clair dans `docker inspect`) — utiliser uniquement `env_file`
+- Surveiller les accès au `.env` avec auditd : `auditctl -w .env -p r -k env_secret`
 
 ---
 
