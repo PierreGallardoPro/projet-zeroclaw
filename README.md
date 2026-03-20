@@ -209,19 +209,6 @@ docker compose ps
 docker compose logs -f
 ```
 
-### En cas de problème après une mise à jour
-
-```bash
-# Revenir au commit précédent
-git log --oneline -5          # identifier le commit stable
-git checkout <commit-hash>    # revenir à ce commit
-
-# Rebuilder depuis ce commit
-docker compose up -d --build
-```
-
-> 💡 **Bonne pratique** : avant toute mise à jour en production, tester sur une branche dédiée et vérifier les logs après le déploiement.
-
 ---
 
 ## ➕ Ajouter un nouvel agent
