@@ -1,4 +1,4 @@
-# 🦾 projet-zeroclaw
+# 🦾 Agent Autonome via ZeroClaw - projet-zeroclaw
 
 Une plateforme d'**agents IA autonomes** modulaires, propulsée par **ZeroClaw**, **OmniRoute** et **Claude (Anthropic)** — le tout orchestré via Docker.
 
