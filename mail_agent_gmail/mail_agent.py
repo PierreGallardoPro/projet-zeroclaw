@@ -5,6 +5,7 @@ import requests
 import os
 import time
 import unicodedata
+from datetime import datetime
 
 # ==========================================
 # CONFIGURATION ET VARIABLES
@@ -18,6 +19,10 @@ MODEL = os.getenv("AI_MODEL", "kr/claude-sonnet-4.5")
 # ==========================================
 # FONCTIONS UTILITAIRES
 # ==========================================
+def log(message):
+    """Affiche un message avec l'heure courante."""
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {message}", flush=True)
+
 def decode_mime_words(s):
     """Décode les objets d'e-mails proprement."""
     return u''.join(
@@ -31,9 +36,7 @@ def clean_folder_name(name):
     qui font planter le protocole IMAP de Gmail.
     Exemple : 'Sécurité' devient 'Securite'.
     """
-    # Retire les accents
     name_no_accents = unicodedata.normalize('NFKD', name).encode('ASCII', 'ignore').decode('ASCII')
-    # Remplace les espaces par des tirets du bas et enlève les guillemets
     return name_no_accents.replace('"', '').replace("'", "").replace(" ", "_").strip()
 
 def ask_claude_for_category(subject, snippet):
@@ -42,52 +45,55 @@ def ask_claude_for_category(subject, snippet):
         "Authorization": f"Bearer {OMNIROUTE_API_KEY}",
         "Content-Type": "application/json"
     }
-    
-    # PROMPT CORRIGÉ : On interdit formellement les accents
+
     prompt = f"Tu es un assistant de tri d'e-mails. Analyse cet e-mail et réponds UNIQUEMENT par le nom du dossier (libellé) dans lequel il doit être rangé. Choisis un nom court (1 à 2 mots maximum, ex: 'Factures', 'Newsletters', 'Personnel', 'Projets'). N'utilise AUCUN accent (remplace é par e, etc.). Aucune ponctuation, aucune phrase, juste le nom du dossier.\n\nObjet : {subject}\nExtrait : {snippet}"
-    
+
     payload = {
         "model": MODEL,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.1
     }
-    
+
     try:
+        log(f"  → Envoi à l'IA : \"{subject}\"")
         response = requests.post(OMNIROUTE_URL, headers=headers, json=payload)
         response.raise_for_status()
         category = response.json()['choices'][0]['message']['content'].strip()
         return clean_folder_name(category)
     except Exception as e:
-        print(f"Erreur avec l'IA: {e}")
+        log(f"  ✗ Erreur avec l'IA : {e}")
         return "A_Trier"
 
 # ==========================================
 # BOUCLE PRINCIPALE
 # ==========================================
 def run_mail_agent():
-    print("Connexion à Gmail...")
+    log("Connexion à Gmail...")
     try:
         mail = imaplib.IMAP4_SSL("imap.gmail.com")
         mail.login(GMAIL_USER, GMAIL_APP_PASS)
+        log("Connecté avec succès.")
+
         mail.select("inbox")
-        
         status, messages = mail.search(None, "UNSEEN")
         email_ids = messages[0].split()
 
         if not email_ids:
-            print("Aucun nouvel e-mail à trier.")
+            log("Aucun nouvel e-mail à trier.")
             mail.logout()
             return
 
-        print(f"{len(email_ids)} e-mail(s) non lu(s) trouvé(s).")
+        log(f"{len(email_ids)} e-mail(s) non lu(s) trouvé(s).")
 
-        for e_id in email_ids:
+        for i, e_id in enumerate(email_ids, start=1):
             status, msg_data = mail.fetch(e_id, "(RFC822)")
             for response_part in msg_data:
                 if isinstance(response_part, tuple):
                     msg = email.message_from_bytes(response_part[1])
                     subject = decode_mime_words(msg.get("Subject", "Sans Objet"))
-                    
+
+                    log(f"[{i}/{len(email_ids)}] Traitement : \"{subject}\"")
+
                     body = ""
                     if msg.is_multipart():
                         for part in msg.walk():
@@ -100,34 +106,37 @@ def run_mail_agent():
                         try:
                             body = msg.get_payload(decode=True).decode()
                         except: pass
-                    
+
                     snippet = body[:500].replace('\n', ' ')
-                    
+
                     # 1. Obtenir le nom du dossier via l'IA
                     folder_name = ask_claude_for_category(subject, snippet)
-                    print(f"[{subject}] -> Dossier '{folder_name}'")
+                    log(f"  ✓ Classé dans : '{folder_name}'")
 
                     # 2. Créer le dossier et déplacer
                     mail.create(f'"{folder_name}"')
                     result = mail.copy(e_id, f'"{folder_name}"')
                     if result[0] == 'OK':
                         mail.store(e_id, '+FLAGS', '\\Deleted')
-                    
-                    time.sleep(1) # Petite pause pour ne pas spammer Gmail
+                        log(f"  ✓ E-mail déplacé avec succès.")
+                    else:
+                        log(f"  ✗ Échec du déplacement.")
+
+                    time.sleep(1)
 
         mail.expunge()
         mail.logout()
-        print("Tri terminé avec succès.")
-        
+        log("Tri terminé avec succès.")
+
     except Exception as e:
-        print(f"Erreur critique lors du traitement : {e}")
+        log(f"✗ Erreur critique lors du traitement : {e}")
 
 # ==========================================
 # DÉMARRAGE AUTOMATIQUE
 # ==========================================
 if __name__ == "__main__":
-    print("🤖 Agent de tri démarré !")
+    log("Agent de tri démarré !")
     while True:
         run_mail_agent()
-        print("Mise en veille pour 15 minutes...")
+        log("Mise en veille pour 15 minutes...")
         time.sleep(900)
