@@ -51,23 +51,6 @@ services:
     depends_on:
       - omniroute
 
-  log-agent:
-    build: ./log_agent
-    container_name: log_agent
-    restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      - OMNIROUTE_URL=http://omniroute:20128/v1/chat/completions
-      - INTERVAL_SECONDS=21600
-      - REPORT_DIR=/reports
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - log-reports:/reports                           
-    depends_on:
-      - omniroute
-
 volumes:
   omniroute-data:
   zeroclaw-data:
-  log-reports:
