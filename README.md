@@ -270,7 +270,6 @@ docker compose down -v
 
 - Le fichier `.env` doit être en `chmod 600` et appartenir à `root`
 - Ne jamais déclarer les variables sensibles sous la clé `environment:` dans `docker-compose.yml` (elles apparaissent en clair dans `docker inspect`) — utiliser uniquement `env_file`
-- Surveiller les accès au `.env` avec auditd : `auditctl -w .env -p r -k env_secret`
 
 ---
 
