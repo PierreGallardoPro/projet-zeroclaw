@@ -87,7 +87,7 @@ Version dédiée Gmail utilisant le système de **mot de passe d'application** G
 - [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/)
 - Un compte mail avec accès IMAP activé
 - Une clé API **OmniRoute**
-- Pour Gmail : un **mot de passe d'application** Google (pas ton mot de passe principal)
+- Pour Gmail : un **mot de passe d'application** Google (pas le mot de passe principal)
 
 ---
 
