@@ -7,7 +7,7 @@ services:
       - PORT=20128
       - DATA_DIR=/app/data
     ports:
-      - "20128:20128"
+      - "127.0.0.1:42617:42617"
     volumes:
       - omniroute-data:/app/data
 
@@ -24,7 +24,7 @@ services:
       - API_KEY=${OMNIROUTE_API_KEY}
       - ZEROCLAW_MODEL=${AI_MODEL}
     ports:
-      - "42617:42617"
+      - "127.0.0.1:42617:42617"
     volumes:
       - zeroclaw-data:/zeroclaw-data
 
