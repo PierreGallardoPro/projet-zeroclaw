@@ -7,7 +7,7 @@ services:
       - PORT=20128
       - DATA_DIR=/app/data
     ports:
-      - "127.0.0.1:42617:42617"
+      - "127.0.0.1:20128:20128"
     volumes:
       - omniroute-data:/app/data
 
