@@ -39,6 +39,35 @@ Ces deux services sont **partagés par tous les agents** — ils doivent toujour
 | `omniroute` | Routeur LLM — proxy les requêtes vers les providers IA | `20128` |
 | `zeroclaw` | Gateway IA — gère les modèles et les accès | `42617` |
 
+### Flux complet de l'architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Serveur Debian                        │
+│                                                             │
+│   Boîte mail (IMAP)                                         │
+│        │                                                    │
+│        ▼                                                    │
+│   mail-agent (Python)                                       │
+│        │  Récupère les e-mails non lus toutes les 15 min   │
+│        │  Envoie objet + extrait à l'IA                     │
+│        ▼                                                    │
+│   OmniRoute :20128  ◄─── Routeur LLM                       │
+│        │                                                    │
+│        ▼                                                    │
+│   ZeroClaw :42617   ◄─── Gateway IA (auth, modèles)        │
+│        │                                                    │
+│        ▼                                                    │
+│   Anthropic API (Claude) ◄─── Externe                      │
+│        │                                                    │
+│        │  Retourne un nom de dossier (ex: "Factures")       │
+│        ▼                                                    │
+│   mail-agent ──▶ Crée le dossier IMAP + déplace l'e-mail   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+> ZeroClaw et OmniRoute communiquent via le **réseau Docker interne** — aucune clé API n'est exposée vers l'extérieur.
+
 ---
 
 ## 🤖 Agents disponibles
