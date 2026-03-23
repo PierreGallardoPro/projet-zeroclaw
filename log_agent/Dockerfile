@@ -10,9 +10,11 @@ COPY log_agent.py .
 # Créer le dossier de rapports
 RUN mkdir -p /reports
 
-# Utilisateur non-root
-RUN adduser --disabled-password --no-create-home --gecos "" agent \
-    && chown -R agent:agent /app /reports
+# Créer l'utilisateur non-root avec le même GID que le groupe docker du host (999)
+# Cela permet d'accéder à /var/run/docker.sock sans être root
+RUN addgroup --gid 989 docker_host 2>/dev/null || true \
+    && adduser --disabled-password --no-create-home --gecos "" --ingroup docker_host agent \
+    && chown -R agent:docker_host /app /reports
 
 USER agent
 
