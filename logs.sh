@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-SERVICES=("omniroute" "zeroclaw" "mail_agent" "mail_agent_gmail")
+SERVICES=("omniroute" "zeroclaw" "mail-agent" "mail-agent-gmail")
 
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
