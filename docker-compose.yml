@@ -112,4 +112,3 @@ networks:
 volumes:
   omniroute-data:
   zeroclaw-data:
-  agents-logs:
