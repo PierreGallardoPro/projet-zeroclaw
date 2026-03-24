@@ -261,7 +261,7 @@ docker compose up -d --build mon-agent
 ## 🛑 Arrêter les services
 
 ```bash
-# Arrêter tous les services
+# Arrêter tous les services 
 docker compose down
 
 # Arrêter un agent spécifique
