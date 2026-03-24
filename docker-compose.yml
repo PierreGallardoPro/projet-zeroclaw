@@ -21,12 +21,6 @@ services:
         limits:
           memory: 512m
           cpus: "0.5"
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost:20128/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
 
   zeroclaw:
     image: ghcr.io/zeroclaw-labs/zeroclaw:latest
@@ -102,7 +96,7 @@ services:
 networks:
   zeroclaw-net:
     driver: bridge
-    internal: false   
+    internal: false
 
 # ==========================================
 # VOLUMES
