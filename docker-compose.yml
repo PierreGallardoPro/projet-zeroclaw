@@ -1,20 +1,37 @@
 services:
+
+  # ==========================================
+  # SOCLE IA — toujours actif
+  # ==========================================
   omniroute:
     image: diegosouzapw/omniroute:latest
     container_name: omniroute
-    restart: unless-stopped
+    restart: on-failure:3
     environment:
       - PORT=20128
       - DATA_DIR=/app/data
     ports:
-      - "127.0.0.1:20128:20128"
+      - "20128:20128"
     volumes:
       - omniroute-data:/app/data
+    networks:
+      - zeroclaw-net
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: "0.5"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost:20128/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
   zeroclaw:
     image: ghcr.io/zeroclaw-labs/zeroclaw:latest
     container_name: zeroclaw
-    restart: unless-stopped
+    restart: on-failure:3
     env_file:
       - .env
     environment:
@@ -27,30 +44,69 @@ services:
       - "42617:42617"
     volumes:
       - zeroclaw-data:/zeroclaw-data
+    networks:
+      - zeroclaw-net
+    depends_on:
+      omniroute:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: "0.5"
 
+  # ==========================================
+  # AGENTS
+  # ==========================================
   mail-agent:
     build: ./mail_agent
     container_name: mail_agent
-    restart: unless-stopped
+    restart: on-failure:3
     env_file:
       - .env
     environment:
-      # L'agent Python communique avec OmniRoute via le réseau Docker interne
       - OMNIROUTE_URL=http://omniroute:20128/v1/chat/completions
+    networks:
+      - zeroclaw-net
     depends_on:
-      - omniroute
+      omniroute:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: "0.25"
 
   mail-agent-gmail:
     build: ./mail_agent_gmail
     container_name: mail_agent_gmail
-    restart: unless-stopped
+    restart: on-failure:3
     env_file:
       - .env
     environment:
       - OMNIROUTE_URL=http://omniroute:20128/v1/chat/completions
+    networks:
+      - zeroclaw-net
     depends_on:
-      - omniroute
+      omniroute:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: "0.25"
 
+# ==========================================
+# RÉSEAU INTERNE ISOLÉ
+# ==========================================
+networks:
+  zeroclaw-net:
+    driver: bridge
+    internal: false   
+
+# ==========================================
+# VOLUMES
+# ==========================================
 volumes:
   omniroute-data:
   zeroclaw-data:
