@@ -21,6 +21,13 @@ services:
         limits:
           memory: 512m
           cpus: "0.5"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        tag: "omniroute"
+        labels: "service"
 
   zeroclaw:
     image: ghcr.io/zeroclaw-labs/zeroclaw:latest
@@ -48,6 +55,12 @@ services:
         limits:
           memory: 512m
           cpus: "0.5"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        tag: "zeroclaw"
 
   # ==========================================
   # AGENTS
@@ -70,6 +83,12 @@ services:
         limits:
           memory: 256m
           cpus: "0.25"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "7"
+        tag: "mail-agent"
 
   mail-agent-gmail:
     build: ./mail_agent_gmail
@@ -89,6 +108,12 @@ services:
         limits:
           memory: 256m
           cpus: "0.25"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "7"
+        tag: "mail-agent-gmail"
 
 # ==========================================
 # RÉSEAU INTERNE ISOLÉ
