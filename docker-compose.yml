@@ -21,13 +21,6 @@ services:
         limits:
           memory: 512m
           cpus: "0.5"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "5"
-        tag: "omniroute"
-        labels: "service"
 
   zeroclaw:
     image: ghcr.io/zeroclaw-labs/zeroclaw:latest
@@ -55,12 +48,6 @@ services:
         limits:
           memory: 512m
           cpus: "0.5"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "5"
-        tag: "zeroclaw"
 
   # ==========================================
   # AGENTS
@@ -73,6 +60,10 @@ services:
       - .env
     environment:
       - OMNIROUTE_URL=http://omniroute:20128/v1/chat/completions
+      - LOG_FILE=/app/logs/agents.jsonl
+      - AGENT_NAME=mail-agent
+    volumes:
+      - agents-logs:/app/logs
     networks:
       - zeroclaw-net
     depends_on:
@@ -83,12 +74,6 @@ services:
         limits:
           memory: 256m
           cpus: "0.25"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "7"
-        tag: "mail-agent"
 
   mail-agent-gmail:
     build: ./mail_agent_gmail
@@ -98,6 +83,10 @@ services:
       - .env
     environment:
       - OMNIROUTE_URL=http://omniroute:20128/v1/chat/completions
+      - LOG_FILE=/app/logs/agents.jsonl
+      - AGENT_NAME=mail-agent-gmail
+    volumes:
+      - agents-logs:/app/logs
     networks:
       - zeroclaw-net
     depends_on:
@@ -108,12 +97,6 @@ services:
         limits:
           memory: 256m
           cpus: "0.25"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "7"
-        tag: "mail-agent-gmail"
 
 # ==========================================
 # RÉSEAU INTERNE ISOLÉ
@@ -129,3 +112,4 @@ networks:
 volumes:
   omniroute-data:
   zeroclaw-data:
+  agents-logs:

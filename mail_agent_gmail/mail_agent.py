@@ -6,6 +6,7 @@ import os
 import time
 import unicodedata
 from datetime import datetime
+from logger import log_info, log_warn, log_error
 
 # ==========================================
 # CONFIGURATION ET VARIABLES
@@ -93,35 +94,35 @@ def ask_claude_for_category(subject, snippet):
         category = response.json()['choices'][0]['message']['content'].strip()
         return clean_folder_name(category)
     except requests.exceptions.Timeout:
-        log(f"  ✗ Timeout OmniRoute ({HTTP_TIMEOUT}s) — classé dans A_Trier")
+        log_error(f"  ✗ Timeout OmniRoute ({HTTP_TIMEOUT}s) — classé dans A_Trier")
         return "A_Trier"
     except requests.exceptions.ConnectionError:
-        log("  ✗ OmniRoute inaccessible — classé dans A_Trier")
+        log_error("  ✗ OmniRoute inaccessible — classé dans A_Trier")
         return "A_Trier"
     except Exception as e:
-        log(f"  ✗ Erreur avec l'IA : {e}")
+        log_error(f"  ✗ Erreur avec l'IA : {e}")
         return "A_Trier"
 
 # ==========================================
 # BOUCLE PRINCIPALE
 # ==========================================
 def run_mail_agent():
-    log("Connexion à Gmail...")
+    log_info("Connexion à Gmail...")
 
     # Retry automatique en cas d'échec IMAP
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             mail = imaplib.IMAP4_SSL("imap.gmail.com")
             mail.login(GMAIL_USER, GMAIL_APP_PASS)
-            log("Connecté avec succès.")
+            log_info("Connecté avec succès.")
             break
         except Exception as e:
-            log(f"  ✗ Tentative {attempt}/{MAX_RETRIES} échouée : {e}")
+            log_error(f"  ✗ Tentative {attempt}/{MAX_RETRIES} échouée : {e}")
             if attempt < MAX_RETRIES:
-                log(f"  → Nouvel essai dans {RETRY_DELAY}s...")
+                log_info(f"  → Nouvel essai dans {RETRY_DELAY}s...")
                 time.sleep(RETRY_DELAY)
             else:
-                log("  ✗ Connexion IMAP impossible après 3 tentatives — cycle abandonné.")
+                log_error("  ✗ Connexion IMAP impossible après 3 tentatives — cycle abandonné.")
                 return
 
     try:
@@ -130,11 +131,11 @@ def run_mail_agent():
         email_ids = messages[0].split()
 
         if not email_ids:
-            log("Aucun nouvel e-mail à trier.")
+            log_info("Aucun nouvel e-mail à trier.")
             mail.logout()
             return
 
-        log(f"{len(email_ids)} e-mail(s) non lu(s) trouvé(s).")
+        log_info(f"{len(email_ids)} e-mail(s) non lu(s) trouvé(s).")
 
         for i, e_id in enumerate(email_ids, start=1):
             status, msg_data = mail.fetch(e_id, "(RFC822)")
@@ -143,7 +144,7 @@ def run_mail_agent():
                     msg = email.message_from_bytes(response_part[1])
                     subject = decode_mime_words(msg.get("Subject", "Sans Objet"))
 
-                    log(f"[{i}/{len(email_ids)}] Traitement : \"{subject}\"")
+                    log_info(f"[{i}/{len(email_ids)}] Traitement : \"{subject}\"")
 
                     body = ""
                     if msg.is_multipart():
@@ -162,35 +163,35 @@ def run_mail_agent():
                     snippet = body[:500].replace('\n', ' ')
 
                     # 1. Obtenir le nom du dossier via l'IA
-                    log(f"  → Envoi à l'IA...")
+                    log_info(f"  → Envoi à l'IA...")
                     folder_name = ask_claude_for_category(subject, snippet)
-                    log(f"  ✓ Classé dans : '{folder_name}'")
+                    log_info(f"  ✓ Classé dans : '{folder_name}'")
 
                     # 2. Créer le dossier et déplacer
                     mail.create(f'"{folder_name}"')
                     result = mail.copy(e_id, f'"{folder_name}"')
                     if result[0] == 'OK':
                         mail.store(e_id, '+FLAGS', '\\Deleted')
-                        log(f"  ✓ E-mail déplacé avec succès.")
+                        log_info(f"  ✓ E-mail déplacé avec succès.")
                     else:
-                        log(f"  ✗ Échec du déplacement.")
+                        log_error(f"  ✗ Échec du déplacement.")
 
                     time.sleep(1)
 
         mail.expunge()
         mail.logout()
-        log("Tri terminé avec succès.")
+        log_info("Tri terminé avec succès.")
 
     except Exception as e:
-        log(f"✗ Erreur critique lors du traitement : {e}")
+        log_error(f"✗ Erreur critique lors du traitement : {e}")
 
 # ==========================================
 # DÉMARRAGE AUTOMATIQUE
 # ==========================================
 if __name__ == "__main__":
     validate_env()   # ← crash propre si variables manquantes
-    log("Agent de tri démarré !")
+    log_info("Agent de tri démarré !")
     while True:
         run_mail_agent()
-        log("Mise en veille pour 15 minutes...")
+        log_info("Mise en veille pour 15 minutes...")
         time.sleep(900)
