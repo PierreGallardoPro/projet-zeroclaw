@@ -1,24 +1,19 @@
-# Remplace par ton vrai nom de domaine (ex: zeroclaw.ton-pseudo.fr)
-http://logs.zeroclaw.local:80 {
+http://logs.zeroclaw.local {
 
-    # 1. Authentification : Le "videur" à l'entrée
-    # Seul l'utilisateur 'pierre' pourra passer
+    # 1. Authentification
     basicauth / {
-        pierre $2a$10$v...ton_hash_genere_ci_dessus...
+        pierre $2a$10$v... (ton hash)
     }
 
-    # 2. Compression : Accélère l'affichage des gros fichiers JSONL
+    # 2. Compression
     encode gzip
 
-    # 3. Reverse Proxy : Le "tunnel" interne
-    # On envoie le trafic vers le service 'log-viewer' sur le port 8080
+    # 3. Reverse Proxy
     reverse_proxy log-viewer:8080
 
-    # 4. Sécurité supplémentaire (Headers)
+    # 4. Sécurité (Version Allégée)
     header {
-        # Empêche ton site d'être affiché dans une iframe ailleurs
         X-Frame-Options "DENY"
-        # Force le navigateur à utiliser HTTPS
-        Strict-Transport-Security "max-age=31536000;"
+        # SUPPRESSION de Strict-Transport-Security ici car il force le SSL
     }
 }
