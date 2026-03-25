@@ -97,6 +97,19 @@ services:
         limits:
           memory: 256m
           cpus: "0.25"
+  
+  log-viewer:
+    build: ./log_viewer
+    container_name: log_viewer
+    restart: unless-stopped
+    environment:
+      - LOG_FILE=/app/logs/agents.jsonl
+    volumes:
+      - agents-logs:/app/logs:ro
+    ports:
+      - "127.0.0.1:8080:8080"   # jamais exposé sur internet
+    networks:
+      - zeroclaw-net
 
 # ==========================================
 # RÉSEAU INTERNE ISOLÉ
@@ -112,3 +125,4 @@ networks:
 volumes:
   omniroute-data:
   zeroclaw-data:
+  agents-logs:
