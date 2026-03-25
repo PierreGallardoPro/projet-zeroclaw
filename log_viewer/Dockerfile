@@ -1,7 +1,9 @@
-FROM python:3.12-alpine
+FROM python:3.12-slim
 WORKDIR /app
-COPY log_viewer.py .
-RUN adduser -D appuser
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY mail_agent.py .
+COPY logger.py .          
+RUN adduser --disabled-password --gecos "" appuser
 USER appuser
-EXPOSE 8080
-CMD ["python", "log_viewer.py"]
+CMD ["python", "mail_agent.py"]
