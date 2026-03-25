@@ -13,4 +13,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Lancement de l'agent
-CMD ["python", "agent.py"]
+CMD ["python", "code_agent.py"]
