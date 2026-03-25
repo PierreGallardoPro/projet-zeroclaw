@@ -98,6 +98,32 @@ services:
           memory: 256m
           cpus: "0.25"
 
+
+  code-agent:
+    build: ./code_agent
+    container_name: code_agent
+    restart: on-failure:3
+    env_file:
+      - .env
+    environment:
+      - OMNIROUTE_URL=http://omniroute:20128/v1/chat/completions
+      - LOG_FILE=/app/logs/agents.jsonl
+      - AGENT_NAME=code-agent
+      - WORKSPACE_DIR=/app/workspace
+    volumes:
+      - agents-logs:/app/logs
+      - ./mon_projet_cible:/app/workspace  # Le dossier contenant le code à analyser/modifier
+    networks:
+      - zeroclaw-net
+    depends_on:
+      omniroute:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512m  # Légèrement augmenté pour manipuler des fichiers plus lourds
+          cpus: "0.5"
+
   # ==========================================
   # OBSERVABILITÉ
   # ==========================================
