@@ -109,7 +109,8 @@ services:
       - LOG_FILE=/app/logs/agents.jsonl
     volumes:
       - agents-logs:/app/logs:ro          
-    ports: []          
+    ports:
+      - "8080:8080"         
     networks:
       - zeroclaw-net
     deploy:
@@ -118,19 +119,19 @@ services:
           memory: 128m
           cpus: "0.1"
 
-  caddy:
-    image: caddy:latest
-    container_name: caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    networks:
-      - zeroclaw-net
+  #caddy:
+  #  image: caddy:latest
+  #  container_name: caddy
+  #  restart: unless-stopped
+  #  ports:
+  #    - "80:80"
+  #    - "443:443"
+  #  volumes:
+  #    - ./Caddyfile:/etc/caddy/Caddyfile
+  #    - caddy_data:/data
+  #    - caddy_config:/config
+  #  networks:
+  #    - zeroclaw-net
 
 # ==========================================
 # RÉSEAU INTERNE ISOLÉ
@@ -144,8 +145,8 @@ networks:
 # VOLUMES
 # ==========================================
 volumes:
-  caddy_data:
-  caddy_config:
+  #caddy_data:
+  #caddy_config:
   omniroute-data:
   zeroclaw-data:
   agents-logs:         
