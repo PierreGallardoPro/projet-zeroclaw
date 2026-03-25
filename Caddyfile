@@ -1,0 +1,24 @@
+# Remplace par ton vrai nom de domaine (ex: zeroclaw.ton-pseudo.fr)
+logs.tondomaine.com {
+
+    # 1. Authentification : Le "videur" à l'entrée
+    # Seul l'utilisateur 'pierre' pourra passer
+    basicauth / {
+        pierre $2a$10$v...ton_hash_genere_ci_dessus...
+    }
+
+    # 2. Compression : Accélère l'affichage des gros fichiers JSONL
+    encode gzip
+
+    # 3. Reverse Proxy : Le "tunnel" interne
+    # On envoie le trafic vers le service 'log-viewer' sur le port 8080
+    reverse_proxy log-viewer:8080
+
+    # 4. Sécurité supplémentaire (Headers)
+    header {
+        # Empêche ton site d'être affiché dans une iframe ailleurs
+        X-Frame-Options "DENY"
+        # Force le navigateur à utiliser HTTPS
+        Strict-Transport-Security "max-age=31536000;"
+    }
+}
