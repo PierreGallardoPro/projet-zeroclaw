@@ -1,19 +1,15 @@
+# Utilise explicitement http et le nom déclaré dans ton fichier hosts
 http://logs.zeroclaw.local {
 
-    # 1. Authentification
-    basicauth / {
-        pierre $2a$10$v... (ton hash)
+    # Utilisation de la nouvelle directive (basicauth est déprécié)
+    basic_auth / {
+        pierre $2a$10$v...ton_hash...
     }
 
-    # 2. Compression
-    encode gzip
-
-    # 3. Reverse Proxy
     reverse_proxy log-viewer:8080
 
-    # 4. Sécurité (Version Allégée)
+    # On retire tous les headers de sécurité qui forcent le HTTPS
     header {
         X-Frame-Options "DENY"
-        # SUPPRESSION de Strict-Transport-Security ici car il force le SSL
     }
 }
