@@ -97,7 +97,10 @@ services:
         limits:
           memory: 256m
           cpus: "0.25"
-  
+
+  # ==========================================
+  # OBSERVABILITÉ
+  # ==========================================
   log-viewer:
     build: ./log_viewer
     container_name: log_viewer
@@ -105,11 +108,16 @@ services:
     environment:
       - LOG_FILE=/app/logs/agents.jsonl
     volumes:
-      - agents-logs:/app/logs:ro
+      - agents-logs:/app/logs:ro          # lecture seule — les agents écrivent, le viewer lit
     ports:
-      - "127.0.0.1:8080:8080"   # jamais exposé sur internet
+      - "127.0.0.1:8080:8080"             # bind localhost uniquement — accès via tunnel SSH
     networks:
       - zeroclaw-net
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+          cpus: "0.1"
 
 # ==========================================
 # RÉSEAU INTERNE ISOLÉ
@@ -125,4 +133,4 @@ networks:
 volumes:
   omniroute-data:
   zeroclaw-data:
-  agents-logs:
+  agents-logs:          # ← volume partagé entre agents et log-viewer

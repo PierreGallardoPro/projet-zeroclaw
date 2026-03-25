@@ -1,9 +1,8 @@
 FROM python:3.12-slim
 WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY mail_agent.py .
-COPY logger.py .          
-RUN adduser --disabled-password --gecos "" appuser
+COPY log_viewer.py .
+RUN adduser --disabled-password --no-create-home --gecos "" appuser \
+    && chown -R appuser:appuser /app
 USER appuser
-CMD ["python", "mail_agent.py"]
+EXPOSE 8080
+CMD ["python", "log_viewer.py"]
