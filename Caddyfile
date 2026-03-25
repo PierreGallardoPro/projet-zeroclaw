@@ -1,5 +1,5 @@
 # Remplace par ton vrai nom de domaine (ex: zeroclaw.ton-pseudo.fr)
-logs.tondomaine.com {
+http://logs.zeroclaw.local:80 {
 
     # 1. Authentification : Le "videur" à l'entrée
     # Seul l'utilisateur 'pierre' pourra passer
