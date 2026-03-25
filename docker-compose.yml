@@ -108,9 +108,9 @@ services:
     environment:
       - LOG_FILE=/app/logs/agents.jsonl
     volumes:
-      - agents-logs:/app/logs:ro          # lecture seule — les agents écrivent, le viewer lit
+      - agents-logs:/app/logs:ro          
     ports:
-      - "127.0.0.1:8080:8080"             # bind localhost uniquement — accès via tunnel SSH
+      - "127.0.0.1:8080:8080"             
     networks:
       - zeroclaw-net
     deploy:
@@ -133,4 +133,4 @@ networks:
 volumes:
   omniroute-data:
   zeroclaw-data:
-  agents-logs:          # ← volume partagé entre agents et log-viewer
+  agents-logs:         
