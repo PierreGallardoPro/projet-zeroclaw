@@ -46,7 +46,86 @@ projet-zeroclaw/
 | `mail-agent` | Tri automatique des e-mails OVH / IMAP | — |
 | `mail-agent-gmail` | Tri automatique des e-mails Gmail | — |
 | `code-agent` | Génère et écrit du code depuis des instructions | — |
-| `log-viewer` | Interface web des logs (accès via tunnel SSH) | `8080` |
+| `log-viewer` | Interface web des logs | `8080` |
+
+---
+
+## Compatibilité
+
+### 🐧 Linux / Serveur Debian (environnement principal)
+
+Le projet est conçu pour tourner sur Linux. Aucune configuration supplémentaire.
+
+```bash
+# Prérequis
+sudo apt install docker.io docker-compose-plugin
+
+# Permissions workspace
+mkdir -p workspace
+chown 1000:1000 workspace
+```
+
+Accès au log viewer depuis ton PC via tunnel SSH :
+```
+ssh -N -L 8080:127.0.0.1:8080 user@IP_SERVEUR
+```
+Puis ouvrir `http://localhost:8080`.
+
+---
+
+### 🪟 Windows (Docker Desktop + WSL2)
+
+Le projet fonctionne sur Windows via **Docker Desktop** et **WSL2**. Les conteneurs tournent dans un noyau Linux — le comportement est identique au serveur.
+
+**Prérequis :**
+
+1. Activer WSL2 (PowerShell en administrateur) :
+```powershell
+wsl --install
+```
+
+2. Installer [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/) puis dans `Settings → Resources → WSL Integration` activer ta distro.
+
+**Cloner et lancer — depuis le terminal WSL2 (pas PowerShell) :**
+```bash
+# Important : cloner dans WSL2, pas dans C:\
+cd ~
+git clone https://github.com/PierreGallardoPro/projet-zeroclaw.git
+cd projet-zeroclaw
+mkdir -p workspace && chmod 777 workspace
+cp .env.example .env
+# éditer .env
+docker compose up -d --build
+```
+
+Le log viewer est accessible directement sur `http://localhost:8080` — pas de tunnel SSH nécessaire en local.
+
+**Récupérer les fichiers générés par le code-agent :**
+```powershell
+# Depuis PowerShell — copier le workspace vers le bureau
+scp -r user@IP_SERVEUR:~/projet-zeroclaw/workspace/ C:\Users\TonNom\Desktop\workspace
+```
+
+Ou ouvrir le dossier directement dans **VSCode** avec l'extension [Remote - SSH](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh) — tu modifies `INSTRUCTIONS.md` et vois les fichiers générés apparaître en temps réel.
+
+> **Note watchdog sur Windows/WSL2 :** la surveillance des fichiers peut avoir un délai de 1-2s comparé à Linux natif — sans impact sur le fonctionnement.
+
+---
+
+### 🍎 macOS (Docker Desktop)
+
+Installer [Docker Desktop pour Mac](https://docs.docker.com/desktop/install/mac-install/), puis :
+
+```bash
+git clone https://github.com/PierreGallardoPro/projet-zeroclaw.git
+cd projet-zeroclaw
+mkdir -p workspace && chmod 777 workspace
+cp .env.example .env
+# éditer .env
+docker compose up -d --build
+```
+
+Le log viewer est accessible directement sur `http://localhost:8080`.
 
 ---
 
@@ -58,9 +137,8 @@ Connexion IMAP → récupération des e-mails non lus → classification par Cla
 
 ### 🤖 code-agent
 
-Surveille le fichier `workspace/INSTRUCTIONS.md`. Dès qu'il est modifié, il envoie l'instruction à Claude qui génère du code et l'écrit directement dans le workspace.
+Surveille `workspace/INSTRUCTIONS.md`. Dès qu'il est modifié, envoie l'instruction à Claude qui génère du code et l'écrit directement dans le workspace.
 
-**Flux :**
 ```
 Tu modifies workspace/INSTRUCTIONS.md
         ↓
@@ -73,57 +151,26 @@ Les fichiers sont écrits dans workspace/
 workspace/RESPONSE.md contient le résumé complet
 ```
 
-**Comment utiliser le code-agent :**
+**Utilisation :**
 
-1. Ouvre `workspace/INSTRUCTIONS.md` sur le serveur
-2. Remplace le contenu par ton instruction, par exemple :
-
+1. Ouvre `workspace/INSTRUCTIONS.md`
+2. Écris ton instruction, par exemple :
 ```
 Crée une API Flask avec deux routes :
 - GET /hello → retourne {"message": "Hello World"}
-- GET /status → retourne {"status": "ok", "uptime": secondes depuis démarrage}
+- GET /status → retourne {"status": "ok"}
 ```
-
-3. Sauvegarde le fichier — l'agent réagit dans la seconde
-4. Consulte `workspace/RESPONSE.md` pour voir ce que Claude a fait
-5. Les fichiers générés apparaissent directement dans `workspace/`
-
-**Format que Claude utilise pour créer les fichiers :**
-
-Claude structure ses réponses avec des blocs ` ```langage:chemin/fichier ``` ` :
-
-````
-```python:app.py
-from flask import Flask
-app = Flask(__name__)
-...
-```
-
-```requirements.txt:requirements.txt
-flask==3.0.0
-```
-````
+3. Sauvegarde — l'agent réagit dans la seconde
+4. Les fichiers générés apparaissent dans `workspace/`, la réponse complète dans `RESPONSE.md`
 
 ---
 
-## Installation
-
-### 1. Cloner le dépôt
+## Installation (serveur Linux)
 
 ```bash
 git clone https://github.com/PierreGallardoPro/projet-zeroclaw.git
 cd projet-zeroclaw
-```
-
-### 2. Créer le dossier workspace
-
-```bash
-mkdir -p workspace
-```
-
-### 3. Configurer les variables d'environnement
-
-```bash
+mkdir -p workspace && chown 1000:1000 workspace
 cp .env.example .env
 ```
 
@@ -145,36 +192,9 @@ OMNIROUTE_API_KEY=ta_cle_api_omniroute
 AI_MODEL=kr/claude-sonnet-4.5
 ```
 
-### 4. Lancer tous les services
-
 ```bash
 docker compose up -d --build
 ```
-
----
-
-## Visualiser les logs
-
-Le log viewer est accessible via un **tunnel SSH** — le port 8080 n'est jamais exposé sur internet.
-
-**Depuis Windows (PowerShell) :**
-
-```
-ssh -N -L 8080:127.0.0.1:8080 user@IP_SERVEUR
-```
-
-Puis ouvrir **http://localhost:8080** dans le navigateur.
-
-**Raccourci `.bat` (double-clic) :**
-
-```bat
-@echo off
-start /b ssh -N -L 8080:127.0.0.1:8080 user@IP_SERVEUR
-timeout /t 2 >nul
-start http://localhost:8080
-```
-
-Les logs de chaque agent sont identifiés par couleur. Les champs contextuels (fichiers écrits, taille, langage, erreur) apparaissent sous chaque ligne sous forme de badges.
 
 ---
 
@@ -188,7 +208,7 @@ docker compose ps
 docker compose logs -f code-agent
 docker compose logs -f mail-agent
 
-# Rebuild d'un agent spécifique
+# Rebuild après modification du code
 docker compose up -d --build code-agent
 
 # Arrêter tout
@@ -234,7 +254,7 @@ docker compose up -d --build mon-agent
 
 - Le fichier `.env` doit être en `chmod 600`
 - Ne jamais mettre de variables sensibles sous `environment:` dans `docker-compose.yml` — utiliser uniquement `env_file`
-- Le port `8080` est bindé sur `127.0.0.1` uniquement — inaccessible sans tunnel SSH
+- En production (serveur), le port `8080` est bindé sur `127.0.0.1` — inaccessible sans tunnel SSH
 
 ---
 
