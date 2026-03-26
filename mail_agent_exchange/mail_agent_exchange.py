@@ -25,7 +25,7 @@ CLIENT_ID        = os.getenv("EXCHANGE_CLIENT_ID")
 CLIENT_SECRET    = os.getenv("EXCHANGE_CLIENT_SECRET")
 MAILBOX          = os.getenv("EXCHANGE_MAILBOX")          # ex: pierre@tonentreprise.com
 OMNIROUTE_URL    = os.getenv("OMNIROUTE_URL", "http://omniroute:20128/v1/chat/completions")
-OMNIROUTE_API_KEY= os.getenv("OMNIROUTE_API_KEY", "")
+OMNIROUTE_API_KEY= os.getenv("OMNIROUTE_API_KEY")
 MODEL            = os.getenv("AI_MODEL", "kr/claude-sonnet-4.5")
 
 GRAPH_BASE       = "https://graph.microsoft.com/v1.0"
