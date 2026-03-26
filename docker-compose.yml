@@ -123,6 +123,30 @@ services:
           memory: 512m
           cpus: "0.5"
 
+
+  mail-agent-exchange:
+    build: ./mail_agent_exchange
+    container_name: mail_agent_exchange
+    restart: on-failure:3
+    env_file:
+      - .env
+    environment:
+      - OMNIROUTE_URL=http://omniroute:20128/v1/chat/completions
+      - LOG_FILE=/app/logs/agents.jsonl
+      - AGENT_NAME=mail-agent-exchange
+    volumes:
+      - agents-logs:/app/logs
+    networks:
+      - zeroclaw-net
+    depends_on:
+      omniroute:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: "0.25"
+
   # ==========================================
   # OBSERVABILITÉ
   # ==========================================
