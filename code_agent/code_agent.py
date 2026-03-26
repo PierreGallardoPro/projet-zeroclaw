@@ -36,7 +36,7 @@ MODEL            = os.getenv("AI_MODEL", "kr/claude-sonnet-4.5")
 WORKSPACE_DIR    = os.getenv("WORKSPACE_DIR", "/app/workspace")
 INSTRUCTION_FILE = "INSTRUCTIONS.md"
 RESPONSE_FILE    = "RESPONSE.md"
-HTTP_TIMEOUT     = 60  # Les réponses de code peuvent être longues
+HTTP_TIMEOUT     = 180  # Les réponses de code peuvent être longues
 
 SYSTEM_PROMPT = """Tu es un agent de codage expert intégré dans une plateforme d'automatisation.
 Tu reçois des instructions en langage naturel et tu génères du code fonctionnel.
@@ -76,6 +76,7 @@ def call_claude(instruction: str) -> str | None:
             {"role": "user",   "content": instruction},
         ],
         "temperature": 0.2,
+        "max_tokens": 8192,
     }
     try:
         r = requests.post(OMNIROUTE_URL, json=payload, headers=headers, timeout=HTTP_TIMEOUT)
