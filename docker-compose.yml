@@ -98,7 +98,6 @@ services:
           memory: 256m
           cpus: "0.25"
 
-
   code-agent:
     build: ./code_agent
     container_name: code_agent
@@ -112,7 +111,7 @@ services:
       - WORKSPACE_DIR=/app/workspace
     volumes:
       - agents-logs:/app/logs
-      - ./mon_projet_cible:/app/workspace  # Le dossier contenant le code à analyser/modifier
+      - ./workspace:/app/workspace
     networks:
       - zeroclaw-net
     depends_on:
@@ -121,7 +120,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m  # Légèrement augmenté pour manipuler des fichiers plus lourds
+          memory: 512m
           cpus: "0.5"
 
   # ==========================================
@@ -134,9 +133,9 @@ services:
     environment:
       - LOG_FILE=/app/logs/agents.jsonl
     volumes:
-      - agents-logs:/app/logs:ro          
+      - agents-logs:/app/logs:ro
     ports:
-      - "8080:8080"         
+      - "127.0.0.1:8080:8080"
     networks:
       - zeroclaw-net
     deploy:
@@ -145,34 +144,12 @@ services:
           memory: 128m
           cpus: "0.1"
 
-  #caddy:
-  #  image: caddy:latest
-  #  container_name: caddy
-  #  restart: unless-stopped
-  #  ports:
-  #    - "80:80"
-  #    - "443:443"
-  #  volumes:
-  #    - ./Caddyfile:/etc/caddy/Caddyfile
-  #    - caddy_data:/data
-  #    - caddy_config:/config
-  #  networks:
-  #    - zeroclaw-net
-
-# ==========================================
-# RÉSEAU INTERNE ISOLÉ
-# ==========================================
 networks:
   zeroclaw-net:
     driver: bridge
     internal: false
 
-# ==========================================
-# VOLUMES
-# ==========================================
 volumes:
-  #caddy_data:
-  #caddy_config:
   omniroute-data:
   zeroclaw-data:
-  agents-logs:         
+  agents-logs:
