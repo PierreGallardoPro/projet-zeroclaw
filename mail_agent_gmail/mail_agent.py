@@ -13,9 +13,9 @@ from logger import log_info, log_error
 # ==========================================
 GMAIL_USER       = os.getenv("GMAIL_USER")
 GMAIL_APP_PASS   = os.getenv("GMAIL_APP_PASS")
-OMNIROUTE_URL    = os.getenv("OMNIROUTE_URL", "http://omniroute:20128/v1/chat/completions")
+OMNIROUTE_URL    = os.getenv("OMNIROUTE_URL")
 OMNIROUTE_API_KEY= os.getenv("OMNIROUTE_API_KEY")
-MODEL            = os.getenv("AI_MODEL", "kr/claude-sonnet-4.5")
+MODEL            = os.getenv("AI_MODEL")
 
 MAX_RETRIES      = 3
 RETRY_DELAY      = 10

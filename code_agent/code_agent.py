@@ -30,9 +30,9 @@ from logger import log_info, log_warn, log_error
 # ==========================================
 # CONFIGURATION
 # ==========================================
-OMNIROUTE_URL    = os.getenv("OMNIROUTE_URL", "http://omniroute:20128/v1/chat/completions")
-OMNIROUTE_API_KEY= os.getenv("OMNIROUTE_API_KEY", "")
-MODEL            = os.getenv("AI_MODEL", "kr/claude-sonnet-4.5")
+OMNIROUTE_URL    = os.getenv("OMNIROUTE_URL")
+OMNIROUTE_API_KEY= os.getenv("OMNIROUTE_API_KEY")
+MODEL            = os.getenv("AI_MODEL")
 WORKSPACE_DIR    = os.getenv("WORKSPACE_DIR", "/app/workspace")
 INSTRUCTION_FILE = "INSTRUCTIONS.md"
 RESPONSE_FILE    = "RESPONSE.md"
