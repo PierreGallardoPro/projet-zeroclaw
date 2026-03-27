@@ -157,7 +157,7 @@ services:
     environment:
       - LOG_FILE=/app/logs/agents.jsonl
     volumes:
-      - agents-logs:/app/logs:ro
+      - agents-logs:/app/logs
     ports:
       - "127.0.0.1:8080:8080"
     networks:
