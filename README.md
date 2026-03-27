@@ -1,5 +1,7 @@
 # 🦾 projet-zeroclaw
 
+![Logo](./src/images/logo_projetzeroclaw.png)
+
 Plateforme d'**agents IA autonomes** propulsée par **ZeroClaw**, **OmniRoute** et **Claude (Anthropic)** — orchestrée via Docker.
 
 > Compatible Linux · macOS · Windows (WSL2)
