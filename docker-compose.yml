@@ -74,6 +74,11 @@ services:
         limits:
           memory: 256m
           cpus: "0.25"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"   # max 10 Mo par fichier
+        max-file: "3"     # 3 fichiers rotatifs = 30 Mo max par agent
 
   mail-agent-gmail:
     build: ./mail_agent_gmail
@@ -97,6 +102,11 @@ services:
         limits:
           memory: 256m
           cpus: "0.25"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"   # max 10 Mo par fichier
+        max-file: "3"     # 3 fichiers rotatifs = 30 Mo max par agent
 
   code-agent:
     build: ./code_agent
@@ -122,6 +132,11 @@ services:
         limits:
           memory: 512m
           cpus: "0.5"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"   # max 10 Mo par fichier
+        max-file: "3"     # 3 fichiers rotatifs = 30 Mo max par agent
 
 
   mail-agent-exchange:
@@ -146,6 +161,11 @@ services:
         limits:
           memory: 256m
           cpus: "0.25"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"   # max 10 Mo par fichier
+        max-file: "3"     # 3 fichiers rotatifs = 30 Mo max par agent
 
   # ==========================================
   # OBSERVABILITÉ
