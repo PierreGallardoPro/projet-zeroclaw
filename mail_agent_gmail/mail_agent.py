@@ -21,6 +21,10 @@ MAX_RETRIES      = 3
 RETRY_DELAY      = 10
 HTTP_TIMEOUT     = 15
 
+# Flag de blocage : passe à True après 3 échecs IMAP consécutifs
+# pour éviter toute nouvelle tentative de connexion
+_imap_blocked = False
+
 # ==========================================
 # VALIDATION AU DÉMARRAGE
 # ==========================================
@@ -87,6 +91,12 @@ def ask_claude_for_category(subject, snippet):
 # BOUCLE PRINCIPALE
 # ==========================================
 def run_mail_agent():
+    global _imap_blocked
+
+    if _imap_blocked:
+        log_error("Connexion IMAP définitivement bloquée après 3 échecs — agent arrêté.")
+        return
+
     log_info("Connexion à Gmail...")
 
     for attempt in range(1, MAX_RETRIES + 1):
@@ -101,7 +111,11 @@ def run_mail_agent():
                 log_info(f"Nouvel essai dans {RETRY_DELAY}s...")
                 time.sleep(RETRY_DELAY)
             else:
-                log_error("Connexion IMAP impossible après 3 tentatives — cycle abandonné.")
+                _imap_blocked = True
+                log_error(
+                    "Connexion IMAP impossible après 3 tentatives — "
+                    "toute nouvelle tentative est désormais bloquée."
+                )
                 return
 
     try:
@@ -167,7 +181,10 @@ def run_mail_agent():
 if __name__ == "__main__":
     validate_env()
     log_info("Agent de tri démarré !")
-    while True:
+    while not _imap_blocked:
         run_mail_agent()
+        if _imap_blocked:
+            log_error("Agent stoppé définitivement — relancer le conteneur pour réessayer.")
+            break
         log_info("Mise en veille pour 15 minutes...")
         time.sleep(900)
